@@ -90,7 +90,7 @@ namespace IngameScript
         {
             public Vector3D Center { get; set; }
             public double Radius { get; set; }
-            public double HillParameter { get; set; } = .12f;
+            public double HillParameter { get; set; } = .06f;
 
             public double SurfaceGravity { get; set; }
             public int GravityExponent { get; set; } = 7;
@@ -130,7 +130,7 @@ namespace IngameScript
             }
             public double GetGravityEdge()
             {
-                return Radius * (1 + HillParameter) * Math.Pow((.05), -1 / GravityExponent);
+                return Radius * (1 + HillParameter) * Math.Pow((.05f), (float)(-1 / GravityExponent));
             }
             public double GetInverseExponentGravity(double dist)
             {
@@ -154,7 +154,7 @@ namespace IngameScript
             }
             public double GetGravitationalPotential(double dist)
             {
-                return -GravityMathNumber / ((GravityExponent - 1) * Math.Pow(dist, GravityExponent - 1));
+                return -GravityMathNumber / ((GravityExponent - 1) * Math.Pow(dist,  GravityExponent - 1));
             }
             public double GetAtmosphericEfficiency(double elevation)
             {

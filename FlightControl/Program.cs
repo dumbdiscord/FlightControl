@@ -31,7 +31,7 @@ namespace IngameScript
         public Ship ship;
         public void Tick()
         {
-
+            
         }
         public void Init()
         {
@@ -85,9 +85,34 @@ namespace IngameScript
                     break;
             }
             ship.Tick(args, Tick);
+            ProfilerGraph();
             if ((timer as IMyFunctionalBlock).Enabled)
             {
                 timer.ApplyAction("TriggerNow");
+            }
+            
+        }
+        //Whip's Profiler Graph Code
+        int count = 1;
+        int maxSeconds = 15;
+        StringBuilder profile = new StringBuilder();
+        bool hasWritten = false;
+        void ProfilerGraph()
+        {
+            if (count <= maxSeconds * 60)
+            {
+                double timeToRunCode = Runtime.LastRunTimeMs;
+
+                profile.Append(timeToRunCode.ToString()).Append("\n");
+                count++;
+            }
+            else if (!hasWritten)
+            {
+                var screen = GridTerminalSystem.GetBlockWithName("DEBUG") as IMyTextPanel;
+                screen?.WritePublicText(profile.ToString());
+                screen?.ShowPublicTextOnScreen();
+                if (screen != null)
+                    hasWritten = true;
             }
         }
         private IMyTimerBlock timer;
