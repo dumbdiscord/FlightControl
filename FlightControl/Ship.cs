@@ -62,6 +62,7 @@ namespace IngameScript
                 this.ControllerBlock = ControllerBlock;
                 this.Me = Me;
                 ShipData = new ShipData(this);
+                ShipData.Update();
                 Logger = new Logger(this);
                 Propulsion = new Propulsion(this);
                 Rotation = new Rotation(this);

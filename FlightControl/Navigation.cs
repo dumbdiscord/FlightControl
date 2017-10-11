@@ -50,28 +50,29 @@ namespace IngameScript
             {
                 if (IsReady && ship.Propulsion.IsReady)
                 {
-                    var velocity = ship.ControllerBlock.GetShipVelocities().LinearVelocity;
-                    var mass = ship.ControllerBlock.CalculateShipMass().PhysicalMass;
-                    var grav = ship.ControllerBlock.GetNaturalGravity();
-                    if (vel.Length() > Ship.speedLimit)
+                    var velocity = ship.ShipData.Velocity.LinearVelocity;
+                    var mass = ship.ShipData.Mass.PhysicalMass;
+                    var grav = ship.ShipData.NaturalGravity;
+                    var vellength = vel.Length();
+                    if (vellength > Ship.speedLimit)
                     {
                         vel.Normalize();
                         vel = vel * Ship.speedLimit;
                     }
                     var force = (vel - velocity) * mass * multiplier;
-                    if (maxaccel > 0 && force.Length() != 0)
+                    if (maxaccel > 0 && force.LengthSquared() != 0)
                     {
                         force = Vector3D.Normalize(force) * Math.Min(maxaccel * mass, force.Length());
                     }
-                    
-                    if (force.Length() > ship.Propulsion.GetMaxThrustTowardsAxis(force, true))
+                    var maxforce = ship.Propulsion.GetMaxThrustTowardsAxis(force, true);
+                    if (force.LengthSquared() > maxforce*maxforce)
                     {
 
                         force.Normalize();
-                        force = force * ship.Propulsion.GetMaxThrustTowardsAxis(force, true);
+                        force = force * maxforce;
                     }
 
-                    force = Vector3D.Transform(force - grav * mass, MatrixD.Invert(ship.ControllerBlock.WorldMatrix.GetOrientation()));
+                    force = Vector3D.TransformNormal(force - grav * mass, MatrixD.Invert(ship.ControllerBlock.WorldMatrix.GetOrientation()));
 
                     ship.Propulsion.thrust(force);
                 }
@@ -82,8 +83,8 @@ namespace IngameScript
                 if (IsReady && ship.Propulsion.IsReady)
                 {
 
-                    var mass = ship.ControllerBlock.CalculateShipMass().PhysicalMass;
-                    var speeds = ship.ControllerBlock.GetShipVelocities();
+                    var mass = ship.ShipData.Mass.PhysicalMass;
+                    var speeds = ship.ShipData.Velocity;
                     var linvel = speeds.LinearVelocity;
                     var grav = ship.ControllerBlock.GetNaturalGravity();
                     var vec = pos - ship.ControllerBlock.GetPosition();

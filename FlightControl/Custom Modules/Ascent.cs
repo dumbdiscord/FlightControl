@@ -40,7 +40,7 @@ namespace IngameScript
                     if (Ascending&&ship.Planets.CurrentPlanet!=null)
                     {
 
-                        Vector3D grav = ship.ControllerBlock.GetNaturalGravity();
+                        Vector3D grav = ship.ShipData.NaturalGravity;
                         
                         if (!double.IsNaN(grav.Length()))
                         {

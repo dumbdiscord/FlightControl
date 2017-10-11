@@ -22,6 +22,7 @@ namespace IngameScript
         {
             float targetelevation;
             bool IsLanding;
+            bool LandToGround;
             public override void Tick()
             {
                 

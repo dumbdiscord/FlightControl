@@ -23,7 +23,7 @@ namespace IngameScript
             public static double LargeGyroTorque = 33600000;
             public static double SmallGyroTorque = 448000;
             public double MaxTorque { get; private set; }
-            public List<IMyGyro> gyros { get; private set; }
+            public HashSet<IMyGyro> gyros { get; private set; }
             public MatrixD InertialTensor { get; private set; }
             public bool UseOldMethod { get; } = false;
             int? m_overrideAccelerationRampFrames = null;
@@ -74,7 +74,7 @@ namespace IngameScript
                     return true;
 
                 });
-                this.gyros = gyros;
+                this.gyros = new HashSet<IMyGyro>(gyros);
             }
             public MatrixD CalculateInertialTensor()
             {

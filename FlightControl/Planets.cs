@@ -130,7 +130,7 @@ namespace IngameScript
             }
             public double GetGravityEdge()
             {
-                return Radius * (1 + HillParameter) * Math.Pow((.05f), (float)(-1 / GravityExponent));
+                return Radius * (1 + HillParameter) * Math.Pow((.05f*9.81f/SurfaceGravity), (float)(-1 / GravityExponent));
             }
             public double GetInverseExponentGravity(double dist)
             {
