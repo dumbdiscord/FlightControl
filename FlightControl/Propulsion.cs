@@ -21,11 +21,12 @@ namespace IngameScript
         public class Propulsion : Module
         {
             HashSet<IMyTerminalBlock> upThrusts;
-            public HashSet<IMyTerminalBlock> downThrusts;
+            HashSet<IMyTerminalBlock> downThrusts;
             HashSet<IMyTerminalBlock> leftThrusts;
             HashSet<IMyTerminalBlock> rightThrusts;
             HashSet<IMyTerminalBlock> forThrusts;
             HashSet<IMyTerminalBlock> backThrusts;
+            public HashSet<IMyTerminalBlock> Thrusters { get; private set; }
             public override void SetEnabled(bool active)
             {
                 if (Initialized && !active)
@@ -48,13 +49,15 @@ namespace IngameScript
             {
                 List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
                 ship.GridTerminalSystem.GetBlocksOfType<IMyThrust>(blocks);
-                upThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => { return thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Up; }));
+                Thrusters = new HashSet<IMyTerminalBlock>(blocks);
+                upThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Up));
                 downThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Down));
                 leftThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Left));
                 rightThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Right));
                 forThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Forward));
                 backThrusts = new HashSet<IMyTerminalBlock>(blocks.Where(thrust => thrust.WorldMatrix.Forward == ship.ControllerBlock.WorldMatrix.Backward));
-
+                
+               
             }
             public Propulsion(Ship ship) : base(ship)
             {
@@ -218,14 +221,19 @@ namespace IngameScript
                     ThrustNewtons(backThrusts, 0);
                 }
             }
-            public float CalculateMaxThrust(HashSet<IMyTerminalBlock> thrusters)
+            public float CalculateMaxThrust(HashSet<IMyTerminalBlock> thrusters, bool shouldbeenabled = true,Func<IMyThrust,bool> predicate=null)
             {
                 float maxthrust = 0;
-                foreach (IMyTerminalBlock block in thrusters)
+                foreach (IMyThrust block in thrusters)
                 {
-                    if ((block as IMyFunctionalBlock).Enabled)
+                    if (!shouldbeenabled|| (block as IMyFunctionalBlock).Enabled)
                     {
-                        maxthrust += (block as IMyThrust).MaxEffectiveThrust;
+                        if (predicate != null)
+                        {
+                            if(predicate(block)) maxthrust += block.MaxEffectiveThrust;
+                            continue;
+                        }
+                        maxthrust += block.MaxEffectiveThrust;
                     }
                 }
                 return maxthrust;
@@ -239,7 +247,48 @@ namespace IngameScript
                     block.SetValueFloat("Override", newtons / maxthrust * 100 > 100 ? 100 : newtons / maxthrust * 100);
                 }
             }
+            public double GetMaxThrustTowardsAxis(Vector3D axis, List<IMyThrust> thrusts,bool withGravity = false,bool useonlygravityfordown = false,bool shouldbeenabled = true)
+            {
+                if (axis == Vector3D.Zero)
+                {
+                    return 0;
+                }
+                
+                axis = Vector3D.Normalize(axis);
+                //if (condition != null) 
+                //{ 
+                //    activethrusters = activethrusters.SelectMany<List<IMyTerminalBlock>>().Where(condition) as List<IMyTerminalBlock>; 
+                //} 
+                var grav = ship.ShipData.NaturalGravity;
+                var mass = ship.ShipData.Mass.PhysicalMass;
+                var gravforce = grav * mass;
+                double maxthrust = 0;
+                List<double> maxthrusts = new List<double>();
+                foreach (var thruster in thrusts)
+                {
 
+                    var d = thruster.WorldMatrix.Forward;
+
+
+                    var gravlocal = withGravity && !double.IsNaN(grav.Length()) ? Vector3D.Dot(gravforce, d) : 0;
+                    var mthrust = (thruster.MaxEffectiveThrust+ gravlocal) / Vector3D.Dot(d, axis);
+
+                    maxthrusts.Add(mthrust);
+
+                }
+
+                if (maxthrusts.Count == 0) { return 0; }
+                maxthrust = maxthrust + maxthrusts.Min();
+                if (useonlygravityfordown)
+                {
+                    var gravdot = Vector3D.Dot(axis * maxthrust, Vector3D.Normalize(grav));
+                    if (gravdot * gravdot > gravforce.LengthSquared())
+                    {
+                        maxthrust *= gravforce.Length() / gravdot;
+                    }
+                }
+                return maxthrust;
+            }
             // Thanks to Equinox from the KSH discord for making this work with gravity properly 
             public double GetMaxThrustTowardsAxis(Vector3D axis, bool withGravity = false,bool useonlygravityfordown=false, Func<IMyTerminalBlock, bool> condition = null)
             {
@@ -256,6 +305,7 @@ namespace IngameScript
                 //} 
                 var grav = ship.ShipData.NaturalGravity;
                 var mass = ship.ShipData.Mass.PhysicalMass;
+                var gravforce = grav * mass;
                 double maxthrust = 0;
                 List<double> maxthrusts = new List<double>();
                 foreach (HashSet<IMyTerminalBlock> thruster in activethrusters)
@@ -263,14 +313,24 @@ namespace IngameScript
                     var d = GetThrusterDirectionFromList(thruster);
                     
 
-                    var gravlocal = withGravity && !double.IsNaN(grav.Length()) ? Vector3D.Dot(grav * mass, d) : 0;
+                    var gravlocal = withGravity && !double.IsNaN(grav.Length()) ? Vector3D.Dot(gravforce, d) : 0;
                     var mthrust = (CalculateMaxThrust(thruster) + gravlocal) / Vector3D.Dot(d, axis);
 
                     maxthrusts.Add(mthrust);
 
                 }
+
                 if (maxthrusts.Count == 0) { return 0; }
-                return maxthrust + maxthrusts.Min();
+                maxthrust= maxthrust + maxthrusts.Min();
+                if (useonlygravityfordown)
+                {
+                    var gravdot = Vector3D.Dot(axis*maxthrust, Vector3D.Normalize(grav));
+                    if (gravdot*gravdot > gravforce.LengthSquared())
+                    {
+                        maxthrust *= gravforce.Length() / gravdot;
+                    }
+                }
+                return maxthrust;
             }
 
         }

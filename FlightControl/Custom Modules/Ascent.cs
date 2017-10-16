@@ -47,7 +47,7 @@ namespace IngameScript
                             //ship.Navigation.orientVectorTowardsDirection(Vector3D.Normalize(grav), Vector3D.Down);
                             if (stage == 0)
                             {
-                                ship.Navigation.MaintainVelocity(-Vector3D.Normalize(grav) * Ship.speedLimit);
+                                
 
                                 if (ship.Propulsion.GetMaxThrustTowardsAxis(-Vector3D.Normalize(grav)) / ship.ControllerBlock.CalculateShipMass().PhysicalMass <= grav.Length())
                                 {
@@ -57,6 +57,7 @@ namespace IngameScript
                                 double exitenergy = ship.Planets.CurrentPlanet.GetGravitationalPotential(ship.Planets.CurrentPlanet.GetGravityEdge()) + escapespeed * escapespeed / 2;
                                 double curenergy = ship.Planets.CurrentPlanet.GetGravitationalPotential(Vector3D.Distance(ship.Planets.CurrentPlanet.Center, ship.ControllerBlock.GetPosition()));//Math.Pow(-ship.Planets.CurrentPlanet.GravityMathNumber / (6 * Vector3D.Distance(ship.Planets.CurrentPlanet.Center, ship.ControllerBlock.CenterOfMass)), 1 / (ship.Planets.CurrentPlanet.GravityExponent - 1));
                                 double targetvelocity = Math.Pow((exitenergy - curenergy)*2, .5f);
+                                ship.Navigation.MaintainVelocity(-Vector3D.Normalize(grav) * targetvelocity);
                                 if (double.IsNaN(targetvelocity) || targetvelocity <= ship.ShipData.Velocity.LinearVelocity.Length())
                                 {
                                     stage++;

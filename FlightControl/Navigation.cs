@@ -64,7 +64,7 @@ namespace IngameScript
                     {
                         force = Vector3D.Normalize(force) * Math.Min(maxaccel * mass, force.Length());
                     }
-                    var maxforce = ship.Propulsion.GetMaxThrustTowardsAxis(force, true);
+                    var maxforce = ship.Propulsion.GetMaxThrustTowardsAxis(force, true,UseOnlyGravityForDown);
                     if (force.LengthSquared() > maxforce*maxforce)
                     {
 

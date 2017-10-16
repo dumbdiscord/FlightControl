@@ -25,7 +25,7 @@ namespace IngameScript
             bool LandToGround;
             public override void Tick()
             {
-                
+
                 if (IsReady)
                 {
                     if (IsLanding)
@@ -39,7 +39,7 @@ namespace IngameScript
                             }
                             else
                             {
-                                   
+
                             }
                         }
                         else
@@ -53,17 +53,22 @@ namespace IngameScript
             {
                 Initialized = true;
             }
-            public void StartLanding(float elevation=-1)
+            public void StartLanding(float elevation = -1)
             {
-                if (IsReady) { 
+                if (IsReady) {
                     IsLanding = true;
                     targetelevation = elevation;
+                    if (elevation == -1)
+                    {
+                        LandToGround = true;
+                    }
                     ship.Navigation.SetEnabled(true);
                     List<IMyThrust> blocks = new List<IMyThrust>();
                     ship.GridTerminalSystem.GetBlocksOfType<IMyThrust>(blocks);
                     blocks.ForEach((x) => x.Enabled = true);
                 }
             }
+
             public void StopLanding()
             {
                 IsLanding = false;
