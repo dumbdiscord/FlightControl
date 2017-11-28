@@ -74,31 +74,36 @@ namespace IngameScript
                 CustomModules = new List<Module>();
             }
 
-            public void Tick(string args, Action TickAction = null)
+            public void Tick(string args, UpdateType type, Action TickAction = null)
             {
 
-                if (args != "" && args != " ")
+                switch (type)
                 {
-                    CustomModules.ForEach(x => x.ProcessCommand(args));
-                    Communications.ProcessRawInputString(args);
-                }
-                else
-                {
-                    ShipData.Update();
-                    EventScheduler.Tick();
-                    Communications.TickStart();
-                    
-                    switch (args)
-                    {
-                        default:
+                    case UpdateType.Antenna:
+                        CustomModules.ForEach(x => x.ProcessCommand(args));
+                        Communications.ProcessRawInputString(args);
+                        break;
+                    case UpdateType.Trigger:
+                    case UpdateType.Terminal:
+                    case UpdateType.Update1:
+                        ShipData.Update();
+                        EventScheduler.Tick();
+                        Communications.TickStart();
 
-                            break;
-                    }
-                    Planets.Tick();
-                    CustomModules.ForEach(x => x.Tick());
-                    if (TickAction != null) TickAction();
-                    Communications.TickEnd();
+                        switch (args)
+                        {
+                            default:
+
+                                break;
+                        }
+                        Planets.Tick();
+                        CustomModules.ForEach(x => x.Tick());
+                        if (TickAction != null) TickAction();
+                        Communications.TickEnd();
+                        break;
                 }
+            
+                
             }
         }
     }

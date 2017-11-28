@@ -47,7 +47,7 @@ namespace IngameScript
             ship.CustomModules.Add(h);
             ship.Initialize();
         }
-        void Main(string args)
+        void Main(string args,UpdateType type)
         {
             switch (args)
             {
@@ -84,12 +84,9 @@ namespace IngameScript
                     }
                     break;
             }
-            ship.Tick(args, Tick);
+            ship.Tick(args, type,Tick);
             ProfilerGraph();
-            if ((timer as IMyFunctionalBlock).Enabled)
-            {
-                timer.ApplyAction("TriggerNow");
-            }
+
             
         }
         //Whip's Profiler Graph Code
@@ -118,7 +115,7 @@ namespace IngameScript
         private IMyTimerBlock timer;
         public Program()
         {
-            timer = GridTerminalSystem.GetBlockWithName(timername) as IMyTimerBlock;
+            Runtime.UpdateFrequency = UpdateFrequency.Update1;
 
             Init();
         }

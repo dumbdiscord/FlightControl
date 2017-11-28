@@ -124,16 +124,16 @@ namespace IngameScript
                     var angvector = (Vector3D)(crossvector) * (double)ang;
                     angvector = Vector3D.Transform(angvector, orientation);
                     angvector = UseInertialTensor ? -ship.Rotation.CalculateTargetAngularVelocity(angvector) : -angvector;
-                    foreach (IMyTerminalBlock gyro in ship.Rotation.gyros)
+                    foreach (IMyGyro gyro in ship.Rotation.gyros)
                     {
                         Matrix orient;
 
                         gyro.Orientation.GetMatrix(out orient);
                         MatrixD invGyroMatrix = MatrixD.Invert(orient);
                         Vector3D angle = Vector3D.Transform(angvector, invGyroMatrix);
-                        gyro.SetValueFloat("Pitch", -(float)angle.X);
-                        gyro.SetValueFloat("Yaw", (float)angle.Y);
-                        gyro.SetValueFloat("Roll", (float)angle.Z);
+                        gyro.Pitch=((float)angle.X);
+                        gyro.Yaw = ((float)angle.Y);
+                        gyro.Roll=((float)angle.Z);
                     }
 
                     return ang < 0.01;
@@ -157,16 +157,16 @@ namespace IngameScript
                     var angvector = (Vector3D)(crossvector) * (double)ang;
                     angvector = Vector3D.Transform(angvector, orientation);
                     angvector = UseInertialTensor ? -ship.Rotation.CalculateTargetAngularVelocity(angvector) : -angvector;
-                    foreach (IMyTerminalBlock gyro in ship.Rotation.gyros)
+                    foreach (IMyGyro gyro in ship.Rotation.gyros)
                     {
                         Matrix orient;
 
                         gyro.Orientation.GetMatrix(out orient);
                         MatrixD invGyroMatrix = MatrixD.Invert(orient);
                         Vector3D angle = Vector3D.Transform(angvector, invGyroMatrix);
-                        gyro.SetValueFloat("Pitch", -(float)angle.X);
-                        gyro.SetValueFloat("Yaw", (float)angle.Y);
-                        gyro.SetValueFloat("Roll", (float)angle.Z);
+                        gyro.Pitch = ((float)angle.X);
+                        gyro.Yaw = ((float)angle.Y);
+                        gyro.Roll = ((float)angle.Z);
                     }
                     return ang < 0.01;
                 }

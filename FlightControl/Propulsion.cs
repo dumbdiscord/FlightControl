@@ -97,27 +97,30 @@ namespace IngameScript
             {
                 axis = Vector3D.Normalize(axis);
                 List<IMyTerminalBlock> output = new List<IMyTerminalBlock>();
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Up, axis) > 0)
+                double dot = Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Up, axis);
+                if (dot > 0)
                 {
                     output.AddRange(downThrusts);
                 }
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Down, axis) > 0)
+                else if (dot!=0)
                 {
                     output.AddRange(upThrusts);
                 }
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Left, axis) > 0)
+                dot = Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Left, axis);
+                if ( dot> 0)
                 {
                     output.AddRange(rightThrusts);
                 }
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Right, axis) > 0)
+                else if (dot!=0)
                 {
                     output.AddRange(leftThrusts);
                 }
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Forward, axis) > 0)
+                dot = Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Forward, axis);
+                if (dot> 0)
                 {
                     output.AddRange(backThrusts);
                 }
-                if (Vector3D.Dot(ship.ControllerBlock.WorldMatrix.Backward, axis) > 0)
+                else if (dot !=0)
                 {
                     output.AddRange(forThrusts);
                 }
@@ -242,9 +245,9 @@ namespace IngameScript
             public void ThrustNewtons(HashSet<IMyTerminalBlock> thrusters, float newtons)
             {
                 float maxthrust = CalculateMaxThrust(thrusters);
-                foreach (IMyTerminalBlock block in thrusters)
+                foreach (IMyThrust block in thrusters)
                 {
-                    block.SetValueFloat("Override", newtons / maxthrust * 100 > 100 ? 100 : newtons / maxthrust * 100);
+                    block.ThrustOverridePercentage=(newtons / maxthrust > 1 ? 1 : newtons / maxthrust);
                 }
             }
             public double GetMaxThrustTowardsAxis(Vector3D axis, List<IMyThrust> thrusts,bool withGravity = false,bool useonlygravityfordown = false,bool shouldbeenabled = true)
